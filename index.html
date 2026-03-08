@@ -3,324 +3,1139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Personal Assistant</title>
+    <title>su233 personal Assistant</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --bg: #f4f7fe;
-            --card-bg: #ffffff;
-            --primary: #4361ee;
-            --secondary: #3f37c9;
-            --text: #2b2d42;
-            --accent: #4cc9f0;
-            --success: #4caf50;
-            --glass: rgba(255, 255, 255, 0.7);
+            --bg: #f8fbff;
+            --bg-gradient-1: #e6f0ff;
+            --bg-gradient-2: #ffe9f5;
+            --card-bg: rgba(255, 255, 255, 0.88);
+            --surface: #ffffff;
+            --primary: #2762ff;
+            --secondary: #ff4d9f;
+            --accent: #12c4a0;
+            --warning: #ff9f43;
+            --text: #1e2452;
+            --muted: #6b7393;
+            --glass-border: rgba(255, 255, 255, 0.35);
+            --shadow: 0 14px 45px rgba(39, 98, 255, 0.12);
         }
 
         body.dark-mode {
-            --bg: #0b0e14;
-            --card-bg: #1a1f26;
-            --text: #e0e0e0;
-            --glass: rgba(0, 0, 0, 0.6);
+            --bg: #0f1324;
+            --bg-gradient-1: #171d36;
+            --bg-gradient-2: #2a1739;
+            --card-bg: rgba(22, 28, 52, 0.82);
+            --surface: #1b2240;
+            --text: #f4f5ff;
+            --muted: #adb3d1;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 14px 45px rgba(0, 0, 0, 0.35);
         }
 
-        * { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        body { 
-            margin: 0; font-family: 'Poppins', sans-serif; 
-            background: var(--bg); color: var(--text);
-            overflow-x: hidden;
+        * {
+            box-sizing: border-box;
+            transition: all 0.25s ease;
         }
 
-        /* Navbar Style */
+        body {
+            margin: 0;
+            font-family: "Poppins", sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 15% 15%, var(--bg-gradient-1), transparent 45%),
+                radial-gradient(circle at 85% 0%, var(--bg-gradient-2), transparent 40%),
+                var(--bg);
+        }
+
+        .app-shell.locked {
+            filter: blur(4px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(39, 98, 255, 0.28), rgba(255, 77, 159, 0.24));
+            backdrop-filter: blur(10px);
+        }
+
+        .login-card {
+            width: min(95vw, 460px);
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+
+        .login-card h1 {
+            margin: 0 0 0.5rem;
+            font-size: 1.7rem;
+        }
+
+        .login-card p {
+            margin: 0 0 1.3rem;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .login-error {
+            color: #d92d20;
+            background: rgba(217, 45, 32, 0.1);
+            border: 1px solid rgba(217, 45, 32, 0.2);
+            border-radius: 10px;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            display: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
         header {
-            position: sticky; top: 0; z-index: 1000;
-            background: var(--glass); backdrop-filter: blur(15px);
-            padding: 1rem 5%; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 4px 30px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.9rem 4%;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
         }
 
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+        .brand-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
 
-        /* Modern Dashboard Cards */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .brand i {
+            color: var(--primary);
+        }
+
+        .brand-sub {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.82rem;
+            letter-spacing: 0.2px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 1px solid rgba(107, 115, 147, 0.35);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 1.5rem auto 2rem;
+            padding: 0 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 1.1rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+            border-radius: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+
+        .stat-card h3 {
+            margin: 0.3rem 0 0;
+            font-size: 1.5rem;
+        }
+
         .dashboard-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px; margin-top: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 1rem;
         }
 
         .card {
-            background: var(--card-bg); padding: 2.5rem 1.5rem; border-radius: 24px;
-            text-align: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            position: relative; overflow: hidden;
+            background: var(--card-bg);
+            padding: 1.6rem 1.2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        .card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(67, 97, 238, 0.15); }
-        .card i { font-size: 3rem; margin-bottom: 1.5rem; color: var(--primary); }
-        .card.notes { border-bottom: 5px solid #ff9f43; }
-        .card.pdfs { border-bottom: 5px solid #ee5253; }
-        .card.images { border-bottom: 5px solid #10ac84; }
-        .card.videos { border-bottom: 5px solid #5f27cd; }
-        .card.links { border-bottom: 5px solid #00d2d3; }
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: auto -30% -60% auto;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(39, 98, 255, 0.18), rgba(255, 77, 159, 0.14));
+        }
 
-        /* Feature View UI */
-        .view-section { display: none; animation: slideUp 0.6s ease; }
-        .active { display: block; }
+        .card:hover {
+            transform: translateY(-4px);
+        }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .card i {
+            font-size: 2rem;
+            margin-bottom: 0.6rem;
+        }
 
-        /* Form Controls */
-        .input-group { background: var(--card-bg); padding: 2rem; border-radius: 20px; margin-bottom: 2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        input, textarea, select {
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px;
-            border: 1px solid #ddd; background: var(--bg); color: var(--text);
+        .card h3 {
+            margin: 0;
+        }
+
+        .view-section {
+            display: none;
+            animation: slideUp 0.35s ease;
+        }
+
+        .active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            background: var(--card-bg);
+            padding: 1.25rem;
+            border-radius: 18px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(107, 115, 147, 0.3);
+            background: var(--surface);
+            color: var(--text);
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 130px;
+            resize: vertical;
         }
 
         .btn-main {
-            background: var(--primary); color: white; border: none;
-            padding: 12px 30px; border-radius: 12px; cursor: pointer; font-weight: 600;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            font-weight: 600;
+            border-radius: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
         }
-        .btn-main:hover { background: var(--secondary); transform: scale(1.05); }
 
-        /* Data Lists */
-        .data-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px; margin-top: 2rem; }
-        .item-card { background: var(--card-bg); padding: 15px; border-radius: 15px; border-left: 5px solid var(--primary); }
+        .btn-main.ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid rgba(107, 115, 147, 0.35);
+        }
 
-        /* Chatbot */
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 12px;
+            margin-top: 1rem;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            padding: 1rem;
+            border-radius: 14px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+
+        .item-card h4 {
+            margin: 0 0 0.4rem;
+            color: var(--primary);
+        }
+
+        .item-card p {
+            margin: 0 0 0.7rem;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .item-card a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        .item-actions {
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 0.45rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-danger {
+            border: 1px solid rgba(255, 77, 77, 0.35);
+            background: rgba(255, 77, 77, 0.15);
+            color: #ff5f7a;
+            border-radius: 8px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .section-tools {
+            margin-bottom: 0.7rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .calculator {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        .calc-top {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .calc-display {
+            width: 100%;
+            margin: 0;
+            font-size: 1.2rem;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .calc-grid button {
+            border: none;
+            border-radius: 10px;
+            padding: 0.7rem 0.3rem;
+            cursor: pointer;
+            font-weight: 600;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid rgba(107, 115, 147, 0.25);
+        }
+
+        .calc-grid .op {
+            background: rgba(39, 98, 255, 0.12);
+            color: var(--primary);
+        }
+
+        .calc-grid .eq {
+            grid-column: span 2;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+        }
+
         #chat-trigger {
-            position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: white; cursor: pointer; box-shadow: 0 10px 30px rgba(67, 97, 238, 0.4);
-            font-size: 1.5rem; z-index: 1001;
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: #fff;
+            z-index: 1001;
+            box-shadow: var(--shadow);
+            cursor: pointer;
         }
 
         #chatbot {
-            position: fixed; bottom: 110px; right: 30px; width: 380px; height: 500px;
-            background: var(--card-bg); border-radius: 25px; display: none;
-            flex-direction: column; box-shadow: 0 15px 50px rgba(0,0,0,0.2);
-            z-index: 1001; border: 1px solid rgba(255,255,255,0.1);
+            position: fixed;
+            right: 16px;
+            bottom: 88px;
+            width: min(92vw, 360px);
+            height: min(70vh, 480px);
+            border-radius: 18px;
+            display: none;
+            flex-direction: column;
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            z-index: 1001;
+        }
+
+        #chat-header {
+            padding: 0.9rem 1rem;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #chat-logs {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.8rem;
+        }
+
+        #chat-controls {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.8rem;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        #chat-controls input {
+            margin: 0;
+        }
+
+        @media (max-width: 700px) {
+            header {
+                padding: 0.8rem 1rem;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .top-actions {
+                width: 100%;
+            }
+
+            .top-actions .btn-main {
+                flex: 1;
+            }
+
+            .top-actions .icon-btn {
+                flex: 0 0 40px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .card {
+                padding: 1.2rem 1rem;
+            }
+
+            .card i {
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .login-card {
+                padding: 1.4rem;
+            }
+
+            .calc-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+
+            .calc-grid .eq {
+                grid-column: span 1;
+            }
         }
     </style>
 </head>
 <body>
-
-<header>
-    <h2 style="color: var(--primary)"><i class="fas fa-brain"></i> AI Assistant</h2>
-    <div>
-        <button onclick="toggleDarkMode()" class="btn-main" style="background:transparent; color:var(--text)"><i class="fas fa-moon"></i></button>
-        <button onclick="showView('dashboard')" class="btn-main">Dashboard</button>
-    </div>
-</header>
-
-<div class="container">
-    <div id="dashboard" class="view-section active">
-        <h1 style="text-align: center; margin-bottom: 2rem;">Digital Workspace</h1>
-        <div class="dashboard-grid">
-            <div class="card notes" onclick="showView('notes')"><i class="fas fa-edit"></i><h3>Notepad</h3><p>Secure thoughts & notes</p></div>
-            <div class="card pdfs" onclick="showView('pdfs')"><i class="fas fa-file-pdf"></i><h3>PDF Vault</h3><p>Important documents</p></div>
-            <div class="card images" onclick="showView('images')"><i class="fas fa-images"></i><h3>Gallery</h3><p>Image cloud storage</p></div>
-            <div class="card videos" onclick="showView('videos')"><i class="fas fa-play-circle"></i><h3>Video Library</h3><p>Video URLs & metadata</p></div>
-            <div class="card links" onclick="showView('bookmarks')"><i class="fas fa-link"></i><h3>Bookmarks</h3><p>Web resources</p></div>
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <h1><i class="fas fa-shield-alt"></i> Welcome Back</h1>
+            <p>Sign in to access your assistant dashboard.</p>
+            <div id="login-error" class="login-error">Invalid user ID or password.</div>
+            <input type="text" id="login-user" placeholder="User ID" autocomplete="username">
+            <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password">
+            <button onclick="login()" class="btn-main" style="width:100%; margin-top:0.5rem;">Log In</button>
         </div>
     </div>
 
-    <div id="notes" class="view-section">
-        <button onclick="showView('dashboard')" class="btn-main" style="margin-bottom:1rem;">← Back</button>
-        <div class="input-group">
-            <h3>Add New Note</h3>
-            <input type="text" id="note-title" placeholder="Note Title...">
-            <textarea id="note-content" placeholder="Start typing your note here..." style="height:150px;"></textarea>
-            <button onclick="saveNote()" class="btn-main"><i class="fas fa-save"></i> Save to Cloud</button>
-        </div>
-        <div id="notes-list" class="data-grid"></div>
-    </div>
-
-    <div id="pdfs" class="view-section">
-        <button onclick="showView('dashboard')" class="btn-main" style="margin-bottom:1rem;">← Back</button>
-        <div class="input-group">
-            <h3>Upload PDF</h3>
-            <input type="file" id="pdf-file" accept=".pdf">
-            <button onclick="handleFileUpload('pdf')" class="btn-main"><i class="fas fa-upload"></i> Upload to Drive</button>
-        </div>
-        <div id="pdfs-list" class="data-grid"></div>
-    </div>
-
-    <div id="images" class="view-section">
-        <button onclick="showView('dashboard')" class="btn-main" style="margin-bottom:1rem;">← Back</button>
-        <div class="input-group">
-            <h3>Upload Image</h3>
-            <input type="file" id="image-file" accept="image/*">
-            <button onclick="handleFileUpload('image')" class="btn-main"><i class="fas fa-camera"></i> Save Gallery</button>
-        </div>
-        <div id="images-list" class="data-grid"></div>
-    </div>
-
-    <div id="videos" class="view-section">
-        <button onclick="showView('dashboard')" class="btn-main" style="margin-bottom:1rem;">← Back</button>
-        <div class="input-group">
-            <h3>Add Video Link</h3>
-            <input type="text" id="video-title" placeholder="Video Title">
-            <input type="text" id="video-url" placeholder="YouTube or Direct Link URL">
-            <button onclick="saveVideo()" class="btn-main"><i class="fas fa-video"></i> Add Video</button>
-        </div>
-        <div id="videos-list" class="data-grid"></div>
-    </div>
-
-    <div id="bookmarks" class="view-section">
-        <button onclick="showView('dashboard')" class="btn-main" style="margin-bottom:1rem;">← Back</button>
-        <div class="input-group">
-            <h3>Save Bookmark</h3>
-            <input type="text" id="link-title" placeholder="Website Name">
-            <input type="text" id="link-url" placeholder="https://example.com">
-            <button onclick="saveBookmark()" class="btn-main"><i class="fas fa-bookmark"></i> Save Link</button>
-        </div>
-        <div id="bookmarks-list" class="data-grid"></div>
-    </div>
-</div>
-
-<div id="chat-trigger" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></div>
-<div id="chatbot">
-    <div style="background:var(--primary); color:white; padding:1.5rem; border-radius:25px 25px 0 0; display:flex; justify-content:space-between;">
-        <span>AI Assistant</span>
-        <i class="fas fa-times" onclick="toggleChat()" style="cursor:pointer"></i>
-    </div>
-    <div id="chat-logs" style="flex:1; padding:1rem; overflow-y:auto; font-size: 0.9rem;"></div>
-    <div style="padding:1rem; display:flex; gap:10px; border-top:1px solid #eee;">
-        <input type="text" id="chat-input" placeholder="Ask AI about your data..." style="margin:0">
-        <button onclick="askAI()" class="btn-main" style="padding:10px 15px"><i class="fas fa-paper-plane"></i></button>
-    </div>
-</div>
-
-<script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzcaM4uUopc6jpCgVUpsYmWe8Wrn_AlI-0J4Rt1o2aBle6BVGPBoWfbA14SSsiYBa7p/exec';
-    // --- Core Navigation ---
-    function showView(viewId) {
-        document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(viewId).classList.add('active');
-        if(viewId !== 'dashboard') fetchData(viewId);
-    }
-
-    // --- Data Fetching ---
-    async function fetchData(type) {
-        const listDiv = document.getElementById(`${type}-list`);
-        listDiv.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Loading data...</p>';
-        try {
-            const response = await fetch(`${API_URL}?target=${capitalize(type)}`);
-            const data = await response.json();
-            renderData(type, data);
-        } catch (e) {
-            listDiv.innerHTML = '<p>Error connecting to Google Sheets.</p>';
-        }
-    }
-
-    function renderData(type, data) {
-        const container = document.getElementById(`${type}-list`);
-        if(!data || data.length === 0) {
-            container.innerHTML = '<p>No data found.</p>';
-            return;
-        }
-        container.innerHTML = data.map(item => `
-            <div class="item-card">
-                <h4 style="margin:0; color:var(--primary)">${item.title || item.name || 'Untitled'}</h4>
-                <p style="font-size:0.85rem">${item.content || ''}</p>
-                ${item.drive_url ? `<a href="${item.drive_url}" target="_blank" class="btn-main" style="display:inline-block; font-size:10px; padding:5px 10px; margin-top:5px">View File</a>` : ''}
-                ${item.website_url ? `<a href="${item.website_url}" target="_blank" class="btn-main" style="display:inline-block; font-size:10px; padding:5px 10px; margin-top:5px">Open Link</a>` : ''}
-                ${item.video_url ? `<iframe width="100%" height="150" src="${item.video_url.replace('watch?v=', 'embed/')}" frameborder="0" allowfullscreen></iframe>` : ''}
+    <div id="app-shell" class="app-shell locked">
+        <header>
+            <div class="brand-block">
+                <div class="brand"><i class="fas fa-brain"></i> su233 personal Assistant</div>
+                <p class="brand-sub">Smart workspace for notes, links, files and daily utilities</p>
             </div>
-        `).join('');
-    }
+            <div class="top-actions">
+                <button id="theme-toggle" onclick="toggleDarkMode()" class="icon-btn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
+                <button onclick="showView('dashboard')" class="btn-main">Dashboard</button>
+                <button onclick="logout()" class="btn-main ghost">Logout</button>
+            </div>
+        </header>
 
-    // --- Save Functions ---
-    async function saveNote() {
-        const title = document.getElementById('note-title').value;
-        const content = document.getElementById('note-content').value;
-        if(!title || !content) return alert("Please fill all fields");
+        <div class="container">
+            <div id="dashboard" class="view-section active">
+                <div class="stats-grid">
+                    <div class="stat-card"><p>Notes</p><h3 id="stat-notes">0</h3></div>
+                    <div class="stat-card"><p>PDFs</p><h3 id="stat-pdfs">0</h3></div>
+                    <div class="stat-card"><p>Images</p><h3 id="stat-images">0</h3></div>
+                    <div class="stat-card"><p>Videos</p><h3 id="stat-videos">0</h3></div>
+                    <div class="stat-card"><p>Bookmarks</p><h3 id="stat-bookmarks">0</h3></div>
+                </div>
+                <div class="section-tools">
+                    <button class="btn-danger" onclick="deleteAllContent()"><i class="fas fa-trash-alt"></i> Delete All Content</button>
+                </div>
 
-        const res = await sendToCloud('addData', 'Notes', [title, content]);
-        if(res.status === 'success') {
-            alert("Note Saved!");
-            document.getElementById('note-title').value = '';
-            document.getElementById('note-content').value = '';
-            fetchData('notes');
+                <div class="dashboard-grid">
+                    <div class="card" onclick="showView('notes')"><i class="fas fa-edit" style="color:#2762ff;"></i><h3>Notepad</h3></div>
+                    <div class="card" onclick="showView('pdfs')"><i class="fas fa-file-pdf" style="color:#ff4d4d;"></i><h3>PDF Vault</h3></div>
+                    <div class="card" onclick="showView('images')"><i class="fas fa-images" style="color:#12c4a0;"></i><h3>Gallery</h3></div>
+                    <div class="card" onclick="showView('videos')"><i class="fas fa-play-circle" style="color:#8f56ff;"></i><h3>Videos</h3></div>
+                    <div class="card" onclick="showView('bookmarks')"><i class="fas fa-link" style="color:#ff9f43;"></i><h3>Bookmarks</h3></div>
+                    <div class="card" onclick="showView('calculator')"><i class="fas fa-calculator" style="color:#00a0ff;"></i><h3>Scientific Calculator</h3></div>
+                </div>
+            </div>
+
+            <div id="notes" class="view-section">
+                <button onclick="showView('dashboard')" class="btn-main ghost">&larr; Back</button>
+                <div class="input-group">
+                    <h3>Add New Note</h3>
+                    <div class="section-tools">
+                        <button class="btn-danger" onclick="deleteAllByType('notes')">Delete All Notes</button>
+                    </div>
+                    <input type="text" id="note-title" placeholder="Note Title...">
+                    <textarea id="note-content" placeholder="Content..."></textarea>
+                    <button onclick="saveNote()" class="btn-main"><i class="fas fa-save"></i> Save</button>
+                </div>
+                <div id="notes-list" class="data-grid"></div>
+            </div>
+
+            <div id="pdfs" class="view-section">
+                <button onclick="showView('dashboard')" class="btn-main ghost">&larr; Back</button>
+                <div class="input-group">
+                    <h3>Upload PDF</h3>
+                    <div class="section-tools">
+                        <button class="btn-danger" onclick="deleteAllByType('pdfs')">Delete All PDFs</button>
+                    </div>
+                    <input type="file" id="pdf-file" accept=".pdf">
+                    <button onclick="handleFileUpload('pdf')" class="btn-main"><i class="fas fa-upload"></i> Upload</button>
+                </div>
+                <div id="pdfs-list" class="data-grid"></div>
+            </div>
+
+            <div id="images" class="view-section">
+                <button onclick="showView('dashboard')" class="btn-main ghost">&larr; Back</button>
+                <div class="input-group">
+                    <h3>Upload Image</h3>
+                    <div class="section-tools">
+                        <button class="btn-danger" onclick="deleteAllByType('images')">Delete All Images</button>
+                    </div>
+                    <input type="file" id="image-file" accept="image/*">
+                    <button onclick="handleFileUpload('image')" class="btn-main"><i class="fas fa-camera"></i> Save</button>
+                </div>
+                <div id="images-list" class="data-grid"></div>
+            </div>
+
+            <div id="videos" class="view-section">
+                <button onclick="showView('dashboard')" class="btn-main ghost">&larr; Back</button>
+                <div class="input-group">
+                    <h3>Add Video Link</h3>
+                    <div class="section-tools">
+                        <button class="btn-danger" onclick="deleteAllByType('videos')">Delete All Videos</button>
+                    </div>
+                    <input type="text" id="video-title" placeholder="Video Title">
+                    <input type="text" id="video-url" placeholder="URL">
+                    <button onclick="saveVideo()" class="btn-main">Add Video</button>
+                </div>
+                <div id="videos-list" class="data-grid"></div>
+            </div>
+
+            <div id="bookmarks" class="view-section">
+                <button onclick="showView('dashboard')" class="btn-main ghost">&larr; Back</button>
+                <div class="input-group">
+                    <h3>Save Link</h3>
+                    <div class="section-tools">
+                        <button class="btn-danger" onclick="deleteAllByType('bookmarks')">Delete All Bookmarks</button>
+                    </div>
+                    <input type="text" id="link-title" placeholder="Website Name">
+                    <input type="text" id="link-url" placeholder="URL">
+                    <button onclick="saveBookmark()" class="btn-main">Save Bookmark</button>
+                </div>
+                <div id="bookmarks-list" class="data-grid"></div>
+            </div>
+
+            <div id="calculator" class="view-section">
+                <button onclick="showView('dashboard')" class="btn-main ghost">&larr; Back</button>
+                <div class="input-group">
+                    <h3>Scientific Calculator</h3>
+                    <p style="margin-top:0; color:var(--muted); font-size:0.9rem;">Handy daily calculator with scientific functions.</p>
+                    <div class="calculator">
+                        <div class="calc-top">
+                            <input id="calc-display" class="calc-display" type="text" placeholder="0" readonly>
+                            <button id="calc-mode-btn" class="btn-main ghost" onclick="toggleCalcMode()">DEG</button>
+                        </div>
+                        <div class="calc-grid">
+                            <button class="op" onclick="calcClear()">AC</button>
+                            <button class="op" onclick="calcBackspace()">DEL</button>
+                            <button class="op" onclick="calcAppend('ans')">ans</button>
+                            <button class="op" onclick="calcAppend('(')">(</button>
+                            <button class="op" onclick="calcAppend(')')">)</button>
+                            <button class="op" onclick="calcAppend('!')">x!</button>
+
+                            <button onclick="calcAppend('7')">7</button>
+                            <button onclick="calcAppend('8')">8</button>
+                            <button onclick="calcAppend('9')">9</button>
+                            <button class="op" onclick="calcAppend('*')">*</button>
+                            <button class="op" onclick="calcFunc('sqrt')">sqrt</button>
+                            <button class="op" onclick="calcAppend('/')">/</button>
+
+                            <button onclick="calcAppend('4')">4</button>
+                            <button onclick="calcAppend('5')">5</button>
+                            <button onclick="calcAppend('6')">6</button>
+                            <button class="op" onclick="calcAppend('-')">-</button>
+                            <button class="op" onclick="calcFunc('log10')">log</button>
+                            <button class="op" onclick="calcFunc('exp')">exp</button>
+
+                            <button onclick="calcAppend('1')">1</button>
+                            <button onclick="calcAppend('2')">2</button>
+                            <button onclick="calcAppend('3')">3</button>
+                            <button class="op" onclick="calcAppend('+')">+</button>
+                            <button class="op" onclick="calcFunc('ln')">ln</button>
+                            <button class="op" onclick="calcFunc('abs')">abs</button>
+
+                            <button onclick="calcAppend('0')">0</button>
+                            <button onclick="calcAppend('.')">.</button>
+                            <button class="op" onclick="calcAppend('^')">x^y</button>
+                            <button class="op" onclick="calcAppend('pi')">pi</button>
+                            <button class="op" onclick="calcAppend('e')">e</button>
+                            <button class="op" onclick="calcAppend('%')">%</button>
+
+                            <button class="op" onclick="calcFunc('sin')">sin</button>
+                            <button class="op" onclick="calcFunc('cos')">cos</button>
+                            <button class="op" onclick="calcFunc('tan')">tan</button>
+                            <button class="op" onclick="calcFunc('asin')">asin</button>
+                            <button class="op" onclick="calcFunc('acos')">acos</button>
+                            <button class="op" onclick="calcFunc('atan')">atan</button>
+                            <button class="eq" onclick="calcEvaluate()">=</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button id="chat-trigger" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></button>
+        <div id="chatbot">
+            <div id="chat-header">
+                <span>su233 personal Assistant</span>
+                <i class="fas fa-times" onclick="toggleChat()" style="cursor:pointer"></i>
+            </div>
+            <div id="chat-logs"></div>
+            <div id="chat-controls">
+                <input type="text" id="chat-input" placeholder="Ask something...">
+                <button onclick="askAI()" class="btn-main"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyUqULUt9O9IfdpyLh0-uOHFtMsKS2R1wch9Q4z2f1UBmeojK7qLqbtu590PA9R9_RF/exec';
+        const LOGIN_USER = 'su233';
+        const LOGIN_PASS = 'Sa205158@#';
+        const DATA_VIEWS = ['notes', 'pdfs', 'images', 'videos', 'bookmarks'];
+        const TARGET_BY_VIEW = { notes: 'Notes', pdfs: 'Pdfs', images: 'Images', videos: 'Videos', bookmarks: 'Bookmarks' };
+        const ITEM_TYPE_BY_VIEW = { notes: 'note', pdfs: 'pdf', images: 'image', videos: 'video', bookmarks: 'bookmark' };
+        const currentData = { notes: [], pdfs: [], images: [], videos: [], bookmarks: [] };
+        const knowledgeBase = { notes: [], pdfs: [], images: [], videos: [], bookmarks: [] };
+        let calcInDegrees = true;
+        let calcAns = 0;
+
+        function login() {
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value;
+            const err = document.getElementById('login-error');
+
+            if (user === LOGIN_USER && pass === LOGIN_PASS) {
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('app-shell').classList.remove('locked');
+                document.body.classList.add('dark-mode');
+                updateThemeIcon();
+                err.style.display = 'none';
+                fetchDashboardStats();
+                refreshKnowledgeBase(true);
+            } else {
+                err.style.display = 'block';
+            }
         }
-    }
 
-    async function saveVideo() {
-        const title = document.getElementById('video-title').value;
-        const url = document.getElementById('video-url').value;
-        const res = await sendToCloud('addData', 'Videos', [title, url, 'URL']);
-        if(res.status === 'success') { fetchData('videos'); }
-    }
+        function logout() {
+            document.getElementById('login-overlay').classList.remove('hidden');
+            document.getElementById('app-shell').classList.add('locked');
+            document.getElementById('login-user').value = '';
+            document.getElementById('login-pass').value = '';
+            document.body.classList.remove('dark-mode');
+            updateThemeIcon();
+            showView('dashboard');
+        }
 
-    async function saveBookmark() {
-        const title = document.getElementById('link-title').value;
-        const url = document.getElementById('link-url').value;
-        const res = await sendToCloud('addData', 'Bookmarks', [title, url, 'General']);
-        if(res.status === 'success') { fetchData('bookmarks'); }
-    }
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            if (DATA_VIEWS.includes(viewId)) {
+                fetchData(viewId);
+            }
+            if (viewId === 'dashboard') {
+                fetchDashboardStats();
+            }
+        }
 
-    // --- File Handling (Images/PDFs) ---
-    async function handleFileUpload(type) {
-        const fileInput = document.getElementById(`${type}-file`);
-        const file = fileInput.files[0];
-        if(!file) return alert("Select a file first");
+        async function fetchData(type) {
+            const listDiv = document.getElementById(`${type}-list`);
+            listDiv.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
+            try {
+                const response = await fetch(`${API_URL}?target=${capitalize(type)}`);
+                const data = await response.json();
+                currentData[type] = Array.isArray(data) ? data : [];
+                renderData(type, data);
+            } catch (e) {
+                listDiv.innerHTML = '<p style="color:red">Error connecting to Sheets. Check Deployment settings.</p>';
+            }
+        }
 
-        const reader = new FileReader();
-        reader.onload = async () => {
-            const base64 = reader.result.split(',')[1];
+        async function refreshKnowledgeBase(force = false) {
+            const jobs = DATA_VIEWS.map(async (view) => {
+                if (!force && knowledgeBase[view]?.length) return;
+                try {
+                    const response = await fetch(`${API_URL}?target=${TARGET_BY_VIEW[view]}`);
+                    const data = await response.json();
+                    knowledgeBase[view] = Array.isArray(data) ? data : [];
+                } catch (_) {
+                    knowledgeBase[view] = [];
+                }
+            });
+            await Promise.all(jobs);
+        }
+
+        async function fetchDashboardStats() {
+            const targets = ['Notes', 'Pdfs', 'Images', 'Videos', 'Bookmarks'];
+            const statIds = {
+                Notes: 'stat-notes',
+                Pdfs: 'stat-pdfs',
+                Images: 'stat-images',
+                Videos: 'stat-videos',
+                Bookmarks: 'stat-bookmarks'
+            };
+
+            await Promise.all(targets.map(async (target) => {
+                try {
+                    const response = await fetch(`${API_URL}?target=${target}`);
+                    const data = await response.json();
+                    const element = document.getElementById(statIds[target]);
+                    if (element) element.textContent = Array.isArray(data) ? data.length : 0;
+                } catch (_) {
+                    const element = document.getElementById(statIds[target]);
+                    if (element) element.textContent = '-';
+                }
+            }));
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderData(type, data) {
+            const container = document.getElementById(`${type}-list`);
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>No data found.</p>';
+                return;
+            }
+
+            container.innerHTML = data.map((item, index) => {
+                const title = escapeHTML(item.title || item.filename || 'Untitled');
+                const content = escapeHTML(item.content || '');
+                const driveUrl = item.drive_url ? `<a href="${escapeHTML(item.drive_url)}" target="_blank" rel="noopener noreferrer">View File</a>` : '';
+                const url = item.url ? `<a href="${escapeHTML(item.url)}" target="_blank" rel="noopener noreferrer">Open Link</a>` : '';
+                const video = item.video_url ? `<iframe width="100%" height="150" src="${escapeHTML(item.video_url.replace('watch?v=', 'embed/'))}" frameborder="0" allowfullscreen loading="lazy"></iframe>` : '';
+
+                return `
+                    <div class="item-card">
+                        <h4>${title}</h4>
+                        <p>${content}</p>
+                        ${driveUrl}
+                        ${url}
+                        ${video}
+                        <div class="item-actions">
+                            <button class="btn-danger" onclick="deleteItem('${type}', ${index})"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteItem(type, index) {
+            const item = currentData[type]?.[index];
+            if (!item) return;
+            if (!confirm('Delete this item permanently?')) return;
+
+            const deleted = await requestDelete(type, item);
+            if (!deleted) {
+                alert('Delete action was sent but server did not confirm. Check Apps Script delete handler.');
+                return;
+            }
+            await fetchData(type);
+            await fetchDashboardStats();
+            await refreshKnowledgeBase(true);
+        }
+
+        async function deleteAllByType(type) {
+            if (!confirm(`Delete all ${type}? This cannot be undone.`)) return;
+            await fetchData(type);
+            const items = [...(currentData[type] || [])];
+            if (!items.length) return alert('No items found to delete.');
+
+            let successCount = 0;
+            for (const item of items) {
+                const ok = await requestDelete(type, item);
+                if (ok) successCount += 1;
+            }
+
+            await fetchData(type);
+            await fetchDashboardStats();
+            await refreshKnowledgeBase(true);
+            alert(`Deleted ${successCount} of ${items.length} ${type}.`);
+        }
+
+        async function deleteAllContent() {
+            if (!confirm('Delete all notes, pdfs, images, videos and bookmarks?')) return;
+            for (const view of DATA_VIEWS) {
+                await fetchData(view);
+                const items = [...(currentData[view] || [])];
+                for (const item of items) {
+                    await requestDelete(view, item);
+                }
+            }
+            await fetchDashboardStats();
+            await refreshKnowledgeBase(true);
+            showView('dashboard');
+            alert('Delete-all process completed.');
+        }
+
+        async function requestDelete(type, item) {
+            const target = TARGET_BY_VIEW[type] || capitalize(type);
+            const itemType = ITEM_TYPE_BY_VIEW[type] || type.replace(/s$/, '');
+            const requests = [
+                { action: 'deleteData', target, item },
+                { action: 'deleteData', target, values: [item.title || item.filename || '', item.content || item.url || item.video_url || item.drive_url || ''] },
+                { action: 'deleteFile', type: itemType, filename: item.filename || '', drive_url: item.drive_url || '' }
+            ];
+
+            for (const payload of requests) {
+                try {
+                    const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                    const result = await response.json().catch(() => ({}));
+                    if (result?.success === true || String(result?.status || '').toLowerCase() === 'success') {
+                        return true;
+                    }
+                    if (response.ok && !result?.error) {
+                        return true;
+                    }
+                } catch (_) {
+                    // ignore and try next delete payload shape
+                }
+            }
+            return false;
+        }
+
+        async function saveNote() {
+            const title = document.getElementById('note-title').value;
+            const content = document.getElementById('note-content').value;
+            await sendToCloud('addData', 'Notes', [title, content]);
+            fetchData('notes');
+            fetchDashboardStats();
+            refreshKnowledgeBase(true);
+        }
+
+        async function saveVideo() {
+            const title = document.getElementById('video-title').value;
+            const url = document.getElementById('video-url').value;
+            await sendToCloud('addData', 'Videos', [title, url, 'URL']);
+            fetchData('videos');
+            fetchDashboardStats();
+            refreshKnowledgeBase(true);
+        }
+
+        async function saveBookmark() {
+            const title = document.getElementById('link-title').value;
+            const url = document.getElementById('link-url').value;
+            await sendToCloud('addData', 'Bookmarks', [title, url, 'General']);
+            fetchData('bookmarks');
+            fetchDashboardStats();
+            refreshKnowledgeBase(true);
+        }
+
+        async function handleFileUpload(type) {
+            const fileInput = document.getElementById(`${type}-file`);
+            const file = fileInput.files[0];
+            if (!file) return alert('Select a file first');
+
+            const reader = new FileReader();
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                await fetch(API_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'uploadFile', type: type, filename: file.name, mimeType: file.type, base64: base64 })
+                });
+                alert('File Saved!');
+                fetchData(type + 's');
+                fetchDashboardStats();
+                refreshKnowledgeBase(true);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function sendToCloud(action, target, values) {
             const response = await fetch(API_URL, {
                 method: 'POST',
-                body: JSON.stringify({
-                    action: 'uploadFile',
-                    type: type,
-                    filename: file.name,
-                    mimeType: file.type,
-                    base64: base64
-                })
+                body: JSON.stringify({ action, target, values })
             });
-            alert('File Saved to Google Drive!');
-            fetchData(type + 's');
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // --- Helper Functions ---
-    async function sendToCloud(action, target, values) {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            body: JSON.stringify({ action, target, values })
-        });
-        return await response.json();
-    }
-
-    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
-    function toggleChat() { 
-        const chat = document.getElementById('chatbot');
-        chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
-    }
-    function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
-
-    // --- AI Chat Logic ---
-    async function askAI() {
-        const input = document.getElementById('chat-input');
-        const logs = document.getElementById('chat-logs');
-        const query = input.value;
-        if(!query) return;
-
-        logs.innerHTML += `<div style="text-align:right; margin-bottom:10px;"><b>You:</b> ${query}</div>`;
-        input.value = '';
-
-        if(query.toLowerCase().includes('note')) {
-            const res = await fetch(`${API_URL}?target=Notes`);
-            const data = await res.json();
-            logs.innerHTML += `<div style="background:#eee; padding:10px; border-radius:10px; margin-bottom:10px;"><b>AI:</b> You have ${data.length} notes saved. Use the Notepad section to read them all.</div>`;
-        } else {
-            logs.innerHTML += `<div style="background:#eee; padding:10px; border-radius:10px; margin-bottom:10px;"><b>AI:</b> I can help you find files and notes. Try asking "how many notes I have?"</div>`;
+            return await response.json();
         }
-        logs.scrollTop = logs.scrollHeight;
-    }
-</script>
+
+        function capitalize(s) {
+            return s.charAt(0).toUpperCase() + s.slice(1);
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.querySelector('#theme-toggle i');
+            if (!icon) return;
+            icon.className = document.body.classList.contains('dark-mode') ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        function calcAppend(value) {
+            const display = document.getElementById('calc-display');
+            display.value += value;
+        }
+
+        function calcFunc(name) {
+            const display = document.getElementById('calc-display');
+            display.value += `${name}(`;
+        }
+
+        function calcClear() {
+            document.getElementById('calc-display').value = '';
+        }
+
+        function calcBackspace() {
+            const display = document.getElementById('calc-display');
+            display.value = display.value.slice(0, -1);
+        }
+
+        function toggleCalcMode() {
+            calcInDegrees = !calcInDegrees;
+            document.getElementById('calc-mode-btn').textContent = calcInDegrees ? 'DEG' : 'RAD';
+        }
+
+        function calcEvaluate() {
+            const display = document.getElementById('calc-display');
+            const raw = display.value.trim();
+            if (!raw) return;
+
+            if (!/^[0-9+\-*/().,%!\sA-Za-z^]+$/.test(raw)) {
+                display.value = 'Error';
+                return;
+            }
+
+            const sin = (x) => Math.sin(calcInDegrees ? (x * Math.PI / 180) : x);
+            const cos = (x) => Math.cos(calcInDegrees ? (x * Math.PI / 180) : x);
+            const tan = (x) => Math.tan(calcInDegrees ? (x * Math.PI / 180) : x);
+            const asin = (x) => calcInDegrees ? (Math.asin(x) * 180 / Math.PI) : Math.asin(x);
+            const acos = (x) => calcInDegrees ? (Math.acos(x) * 180 / Math.PI) : Math.acos(x);
+            const atan = (x) => calcInDegrees ? (Math.atan(x) * 180 / Math.PI) : Math.atan(x);
+            const ln = (x) => Math.log(x);
+            const log10 = (x) => Math.log10(x);
+            const sqrt = (x) => Math.sqrt(x);
+            const abs = (x) => Math.abs(x);
+            const exp = (x) => Math.exp(x);
+            const fact = (n) => {
+                if (n < 0 || !Number.isFinite(n) || Math.floor(n) !== n) throw new Error('Invalid factorial');
+                let out = 1;
+                for (let i = 2; i <= n; i += 1) out *= i;
+                return out;
+            };
+
+            let expr = raw
+                .replace(/\^/g, '**')
+                .replace(/\bpi\b/gi, 'Math.PI')
+                .replace(/\be\b/g, 'Math.E')
+                .replace(/\bans\b/gi, `(${calcAns})`)
+                .replace(/(\([^()]*\)|\d+(\.\d+)?)%/g, '($1/100)');
+
+            while (/(\([^()]*\)|\d+(\.\d+)?|Math\.PI|Math\.E)!/.test(expr)) {
+                expr = expr.replace(/(\([^()]*\)|\d+(\.\d+)?|Math\.PI|Math\.E)!/g, 'fact($1)');
+            }
+
+            try {
+                const result = Function('sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'ln', 'log10', 'sqrt', 'abs', 'exp', 'fact', `return (${expr});`)(
+                    sin, cos, tan, asin, acos, atan, ln, log10, sqrt, abs, exp, fact
+                );
+                if (!Number.isFinite(result)) throw new Error('Invalid');
+                calcAns = Number(result.toFixed(10));
+                display.value = calcAns.toString();
+            } catch (_) {
+                display.value = 'Error';
+            }
+        }
+
+        function toggleChat() {
+            const chat = document.getElementById('chatbot');
+            chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        async function askAI() {
+            const input = document.getElementById('chat-input');
+            const logs = document.getElementById('chat-logs');
+            const question = input.value.trim();
+            if (!question) return;
+            logs.innerHTML += `<div><b>You:</b> ${escapeHTML(question)}</div>`;
+            input.value = '';
+            logs.innerHTML += '<div style="color:var(--muted)"><b>AI:</b> Reading your notes/files...</div>';
+            logs.scrollTop = logs.scrollHeight;
+
+            await refreshKnowledgeBase();
+            const aiText = buildAssistantAnswer(question);
+            logs.innerHTML += `<div style="color:var(--primary)"><b>AI:</b> ${aiText}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function buildAssistantAnswer(question) {
+            const q = question.toLowerCase();
+            const merged = [];
+            for (const view of DATA_VIEWS) {
+                const rows = knowledgeBase[view] || [];
+                rows.forEach((item) => {
+                    merged.push({
+                        type: view,
+                        item,
+                        text: `${view} ${item.title || ''} ${item.content || ''} ${item.filename || ''} ${item.url || ''} ${item.video_url || ''} ${item.drive_url || ''}`.toLowerCase()
+                    });
+                });
+            }
+
+            if (!merged.length) {
+                return 'No saved content found yet.';
+            }
+
+            if (q.includes('how many') || q.includes('count') || q.includes('total')) {
+                return `You have ${knowledgeBase.notes.length} notes, ${knowledgeBase.pdfs.length} pdfs, ${knowledgeBase.images.length} images, ${knowledgeBase.videos.length} videos, and ${knowledgeBase.bookmarks.length} bookmarks.`;
+            }
+
+            if (q.includes('all notes') || q === 'notes') {
+                const list = knowledgeBase.notes.slice(0, 8).map((n, i) => `${i + 1}. ${escapeHTML(n.title || 'Untitled note')}`);
+                return list.length ? list.join('<br>') : 'No notes found.';
+            }
+
+            const tokens = q.split(/[^a-z0-9]+/).filter(t => t.length > 2);
+            const scored = merged.map((entry) => {
+                const score = tokens.reduce((s, token) => s + (entry.text.includes(token) ? 1 : 0), 0);
+                return { ...entry, score };
+            }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
+
+            if (!scored.length) {
+                return 'I read your saved content, but no close match found. Try asking with specific keywords from your note title or file/link name.';
+            }
+
+            return scored.map((m, i) => {
+                const label = m.item.title || m.item.filename || m.item.url || m.item.video_url || 'Untitled';
+                return `${i + 1}. ${escapeHTML(label)} (${m.type})`;
+            }).join('<br>');
+        }
+
+        document.getElementById('login-pass').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') login();
+        });
+        updateThemeIcon();
+    </script>
 </body>
 </html>

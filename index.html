@@ -352,6 +352,115 @@
             flex-wrap: wrap;
         }
 
+        .overview-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: 16px;
+            padding: 0.9rem 1rem;
+            margin: 0.4rem 0 1rem;
+        }
+
+        .overview-panel h4 {
+            margin: 0 0 0.45rem;
+        }
+
+        .overview-panel p {
+            margin: 0.25rem 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .dashboard-clock {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: 16px;
+            padding: 0.9rem 1rem;
+            margin: 0.4rem 0 1rem;
+            text-align: center;
+        }
+
+        #digital-clock {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        #digital-date {
+            margin: 0.2rem 0 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .dashboard-widgets {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .widget-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: 16px;
+            padding: 0.9rem 1rem;
+        }
+
+        .widget-panel h4 {
+            margin: 0 0 0.65rem;
+        }
+
+        .mini-input-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 0.55rem;
+        }
+
+        .mini-input-row.three {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0.3rem 0 0.6rem;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .simple-list {
+            margin: 0.5rem 0 0;
+            padding-left: 1rem;
+            max-height: 220px;
+            overflow: auto;
+        }
+
+        .simple-list li {
+            margin: 0.3rem 0;
+        }
+
+        .alarm-item {
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 0.55rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .alarm-alert {
+            margin-top: 0.65rem;
+            border: 1px solid rgba(255, 77, 77, 0.35);
+            background: rgba(255, 77, 77, 0.13);
+            border-radius: 10px;
+            padding: 0.55rem;
+        }
+
         .calculator {
             background: var(--card-bg);
             border: 1px solid var(--glass-border);
@@ -556,9 +665,15 @@
                     <div class="stat-card"><p>Bookmarks</p><h3 id="stat-bookmarks">0</h3></div>
                 </div>
                 <div class="section-tools">
+                    <button class="btn-main ghost" onclick="fetchOverview(true)"><i class="fas fa-sync-alt"></i> Fetch Overview</button>
+                    <button class="btn-main ghost" onclick="downloadAllContentJson()"><i class="fas fa-download"></i> Download All JSON</button>
+                    <button class="btn-main ghost" onclick="toggleAlarmPanel()"><i class="fas fa-bell"></i> Alarm</button>
                     <button class="btn-danger" onclick="deleteAllContent()"><i class="fas fa-trash-alt"></i> Delete All Content</button>
                 </div>
-
+                <div class="dashboard-clock">
+                    <h3 id="digital-clock">--:--:--</h3>
+                    <p id="digital-date">--</p>
+                </div>
                 <div class="dashboard-grid">
                     <div class="card" onclick="showView('notes')"><i class="fas fa-edit" style="color:#2762ff;"></i><h3>Notepad</h3></div>
                     <div class="card" onclick="showView('pdfs')"><i class="fas fa-file-pdf" style="color:#ff4d4d;"></i><h3>PDF Vault</h3></div>
@@ -567,6 +682,65 @@
                     <div class="card" onclick="showView('bookmarks')"><i class="fas fa-link" style="color:#ff9f43;"></i><h3>Bookmarks</h3></div>
                     <div class="card" onclick="showView('calculator')"><i class="fas fa-calculator" style="color:#00a0ff;"></i><h3>Scientific Calculator</h3></div>
                 </div>
+                <div id="overview-panel" class="overview-panel">
+                    <h4>Content Overview</h4>
+                    <p id="overview-summary">Click "Fetch Overview" to load all content summary.</p>
+                </div>
+                <div class="dashboard-widgets">
+                    <div class="widget-panel">
+                        <h4>All Content Titles Fetcher</h4>
+                        <div class="section-tools">
+                            <button class="btn-main ghost" onclick="fetchAllTitles(true)"><i class="fas fa-list"></i> Fetch Titles</button>
+                        </div>
+                        <p id="title-fetch-summary" style="margin:0; color:var(--muted); font-size:0.9rem;">No fetch yet.</p>
+                        <ol id="all-titles-list" class="simple-list"></ol>
+                    </div>
+                    <div id="alarm-widget" class="widget-panel hidden">
+                        <h4>Alarm Fetcher</h4>
+                        <div class="mini-input-row three">
+                            <input type="time" id="alarm-time">
+                            <input type="date" id="alarm-date">
+                            <input type="text" id="alarm-label" placeholder="Alarm label">
+                        </div>
+                        <div class="mini-input-row three">
+                            <select id="alarm-repeat">
+                                <option value="once">One Time</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekdays">Weekdays</option>
+                                <option value="weekends">Weekends</option>
+                            </select>
+                            <select id="alarm-tone">
+                                <option value="classic">Classic</option>
+                                <option value="beep">Beep</option>
+                                <option value="soft">Soft</option>
+                            </select>
+                            <select id="alarm-snooze">
+                                <option value="5">Snooze 5m</option>
+                                <option value="10">Snooze 10m</option>
+                                <option value="15">Snooze 15m</option>
+                            </select>
+                        </div>
+                        <div class="toggle-row">
+                            <label for="alarm-volume">Volume</label>
+                            <input type="range" id="alarm-volume" min="0.1" max="1" step="0.1" value="0.8">
+                            <label><input type="checkbox" id="clock-24h"> 24h clock</label>
+                        </div>
+                        <div class="section-tools">
+                            <button class="btn-main" onclick="addAlarm()"><i class="fas fa-bell"></i> Set Alarm</button>
+                            <button class="btn-main ghost" onclick="fetchAlarms(true)"><i class="fas fa-sync-alt"></i> Fetch Alarms</button>
+                            <button class="btn-main ghost" onclick="stopAlarmSound()"><i class="fas fa-stop"></i> Stop Sound</button>
+                        </div>
+                        <div id="alarm-alert" class="alarm-alert hidden">
+                            <p id="alarm-alert-text" style="margin:0 0 0.45rem;"></p>
+                            <div class="section-tools" style="margin:0;">
+                                <button class="btn-main ghost" onclick="snoozeActiveAlarm()">Snooze</button>
+                                <button class="btn-danger" onclick="dismissActiveAlarm()">Dismiss</button>
+                            </div>
+                        </div>
+                        <div id="alarm-list"></div>
+                    </div>
+                </div>
+
             </div>
 
             <div id="notes" class="view-section">
@@ -590,6 +764,7 @@
                     <div class="section-tools">
                         <button class="btn-danger" onclick="deleteAllByType('pdfs')">Delete All PDFs</button>
                     </div>
+                    <input type="text" id="pdf-title" placeholder="PDF Title">
                     <input type="file" id="pdf-file" accept=".pdf">
                     <button onclick="handleFileUpload('pdf')" class="btn-main"><i class="fas fa-upload"></i> Upload</button>
                 </div>
@@ -603,6 +778,7 @@
                     <div class="section-tools">
                         <button class="btn-danger" onclick="deleteAllByType('images')">Delete All Images</button>
                     </div>
+                    <input type="text" id="image-title" placeholder="Image Title">
                     <input type="file" id="image-file" accept="image/*">
                     <button onclick="handleFileUpload('image')" class="btn-main"><i class="fas fa-camera"></i> Save</button>
                 </div>
@@ -721,6 +897,12 @@
         const knowledgeBase = { notes: [], pdfs: [], images: [], videos: [], bookmarks: [] };
         let calcInDegrees = true;
         let calcAns = 0;
+        let clockTimer = null;
+        let alarmTimer = null;
+        let activeAlarmId = '';
+        let alarmSoundTimer = null;
+        let audioCtx = null;
+        let alarms = [];
 
         function login() {
             const user = document.getElementById('login-user').value.trim();
@@ -734,6 +916,9 @@
                 updateThemeIcon();
                 err.style.display = 'none';
                 fetchDashboardStats();
+                fetchOverview();
+                fetchAllTitles();
+                initClockAndAlarm();
                 refreshKnowledgeBase(true);
             } else {
                 err.style.display = 'block';
@@ -758,6 +943,9 @@
             }
             if (viewId === 'dashboard') {
                 fetchDashboardStats();
+                fetchOverview();
+                fetchAllTitles();
+                initClockAndAlarm();
             }
         }
 
@@ -789,26 +977,370 @@
         }
 
         async function fetchDashboardStats() {
-            const targets = ['Notes', 'Pdfs', 'Images', 'Videos', 'Bookmarks'];
-            const statIds = {
-                Notes: 'stat-notes',
-                Pdfs: 'stat-pdfs',
-                Images: 'stat-images',
-                Videos: 'stat-videos',
-                Bookmarks: 'stat-bookmarks'
-            };
-
-            await Promise.all(targets.map(async (target) => {
-                try {
-                    const response = await fetch(`${API_URL}?target=${target}`);
-                    const data = await response.json();
-                    const element = document.getElementById(statIds[target]);
-                    if (element) element.textContent = Array.isArray(data) ? data.length : 0;
-                } catch (_) {
-                    const element = document.getElementById(statIds[target]);
+            try {
+                const response = await fetch(`${API_URL}?target=overview`);
+                const payload = await response.json();
+                const counts = payload?.counts || {};
+                document.getElementById('stat-notes').textContent = counts.notes ?? 0;
+                document.getElementById('stat-pdfs').textContent = counts.pdfs ?? 0;
+                document.getElementById('stat-images').textContent = counts.images ?? 0;
+                document.getElementById('stat-videos').textContent = counts.videos ?? 0;
+                document.getElementById('stat-bookmarks').textContent = counts.bookmarks ?? 0;
+            } catch (_) {
+                const ids = ['stat-notes', 'stat-pdfs', 'stat-images', 'stat-videos', 'stat-bookmarks'];
+                ids.forEach((id) => {
+                    const element = document.getElementById(id);
                     if (element) element.textContent = '-';
+                });
+            }
+        }
+
+        async function fetchOverview(showMessage = false) {
+            const summary = document.getElementById('overview-summary');
+            if (!summary) return;
+            summary.textContent = 'Loading overview...';
+            try {
+                const response = await fetch(`${API_URL}?target=overview`);
+                const payload = await response.json();
+                const counts = payload?.counts || {};
+                const recent = Number(payload?.recent_items ?? 0);
+                const updatedAt = payload?.generated_at ? new Date(payload.generated_at).toLocaleString() : 'N/A';
+                summary.textContent = `Notes: ${counts.notes ?? 0}, PDFs: ${counts.pdfs ?? 0}, Images: ${counts.images ?? 0}, Videos: ${counts.videos ?? 0}, Bookmarks: ${counts.bookmarks ?? 0}, Recent Items: ${recent}, Updated: ${updatedAt}`;
+                if (showMessage) alert('Overview fetched successfully.');
+            } catch (_) {
+                summary.textContent = 'Failed to fetch overview.';
+                if (showMessage) alert('Failed to fetch overview.');
+            }
+        }
+
+        async function downloadAllContentJson() {
+            try {
+                const response = await fetch(`${API_URL}?target=all`);
+                const payload = await response.json();
+                if (payload?.status !== 'success') {
+                    alert('Failed to build downloadable JSON.');
+                    return;
                 }
-            }));
+                const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+                const link = document.createElement('a');
+                const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+                link.href = URL.createObjectURL(blob);
+                link.download = `all-content-overview-${stamp}.json`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(link.href);
+                alert('Download started.');
+            } catch (_) {
+                alert('Download failed.');
+            }
+        }
+
+        async function fetchAllTitles(showMessage = false) {
+            const summaryEl = document.getElementById('title-fetch-summary');
+            const listEl = document.getElementById('all-titles-list');
+            if (!summaryEl || !listEl) return;
+
+            summaryEl.textContent = 'Fetching all titles...';
+            listEl.innerHTML = '';
+            try {
+                const response = await fetch(`${API_URL}?target=all`);
+                const payload = await response.json();
+                if (String(payload?.status || '').toLowerCase() !== 'success') {
+                    summaryEl.textContent = 'Failed to fetch titles.';
+                    if (showMessage) alert('Failed to fetch titles.');
+                    return;
+                }
+
+                const buckets = payload?.data || {};
+                const merged = [];
+                Object.keys(buckets).forEach((typeKey) => {
+                    (buckets[typeKey] || []).forEach((item) => {
+                        const title = (item.title || item.filename || item.url || item.video_url || '').toString().trim();
+                        if (!title) return;
+                        merged.push({ type: typeKey, title: title });
+                    });
+                });
+
+                if (!merged.length) {
+                    summaryEl.textContent = 'No titles found.';
+                    if (showMessage) alert('No titles found.');
+                    return;
+                }
+
+                merged.forEach((entry) => {
+                    const li = document.createElement('li');
+                    li.textContent = `[${entry.type}] ${entry.title}`;
+                    listEl.appendChild(li);
+                });
+                summaryEl.textContent = `${merged.length} titles fetched from all content.`;
+                if (showMessage) alert('Titles fetched successfully.');
+            } catch (_) {
+                summaryEl.textContent = 'Failed to fetch titles.';
+                if (showMessage) alert('Failed to fetch titles.');
+            }
+        }
+
+        function initClockAndAlarm() {
+            if (!clockTimer) {
+                updateDigitalClock();
+                clockTimer = setInterval(updateDigitalClock, 1000);
+            }
+            ensureNotificationPermission(false);
+            loadAlarms();
+            fetchAlarms();
+            if (!alarmTimer) {
+                alarmTimer = setInterval(checkAlarms, 1000);
+            }
+        }
+
+        function toggleAlarmPanel() {
+            const panel = document.getElementById('alarm-widget');
+            if (!panel) return;
+            panel.classList.toggle('hidden');
+        }
+
+        function updateDigitalClock() {
+            const clockEl = document.getElementById('digital-clock');
+            const dateEl = document.getElementById('digital-date');
+            if (!clockEl || !dateEl) return;
+            const now = new Date();
+            const use24h = Boolean(document.getElementById('clock-24h')?.checked);
+            const timeText = now.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: !use24h
+            });
+            const dateText = now.toLocaleDateString([], {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            clockEl.textContent = timeText;
+            dateEl.textContent = dateText;
+        }
+
+        function addAlarm() {
+            const time = document.getElementById('alarm-time')?.value;
+            const date = document.getElementById('alarm-date')?.value;
+            const label = (document.getElementById('alarm-label')?.value || 'Alarm').trim();
+            const repeat = document.getElementById('alarm-repeat')?.value || 'once';
+            const tone = document.getElementById('alarm-tone')?.value || 'classic';
+            const snooze = Number(document.getElementById('alarm-snooze')?.value || 5);
+            const volume = Number(document.getElementById('alarm-volume')?.value || 0.8);
+
+            if (!time) return alert('Please set alarm time.');
+            if (repeat === 'once' && !date) return alert('Please set date for one-time alarm.');
+
+            ensureNotificationPermission(true);
+            const alarm = {
+                id: `alarm_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                time,
+                date: repeat === 'once' ? date : '',
+                label,
+                repeat,
+                tone,
+                snooze,
+                volume,
+                enabled: true,
+                lastTriggeredKey: ''
+            };
+            alarms.push(alarm);
+            saveAlarms();
+            fetchAlarms();
+            alert('Alarm set successfully.');
+        }
+
+        function fetchAlarms(showMessage = false) {
+            const container = document.getElementById('alarm-list');
+            if (!container) return;
+            const sorted = [...alarms].sort((a, b) => (a.time > b.time ? 1 : -1));
+            if (!sorted.length) {
+                container.innerHTML = '<p style="color:var(--muted); margin:0.2rem 0;">No alarms set.</p>';
+                if (showMessage) alert('No alarms found.');
+                return;
+            }
+            container.innerHTML = sorted.map((alarm) => `
+                <div class="alarm-item">
+                    <div><b>${escapeHTML(alarm.time)}</b> ${alarm.date ? `(${escapeHTML(alarm.date)})` : ''} - ${escapeHTML(alarm.label)}</div>
+                    <div style="color:var(--muted); font-size:0.85rem;">Repeat: ${escapeHTML(alarm.repeat)}, Tone: ${escapeHTML(alarm.tone)}, Snooze: ${alarm.snooze}m, Volume: ${alarm.volume}</div>
+                    <div class="section-tools" style="margin:0.35rem 0 0;">
+                        <button class="btn-main ghost" onclick="toggleAlarm('${alarm.id}')">${alarm.enabled ? 'Disable' : 'Enable'}</button>
+                        <button class="btn-danger" onclick="removeAlarm('${alarm.id}')">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+            if (showMessage) alert('Alarms fetched successfully.');
+        }
+
+        function toggleAlarm(id) {
+            alarms = alarms.map((a) => a.id === id ? { ...a, enabled: !a.enabled } : a);
+            saveAlarms();
+            fetchAlarms();
+        }
+
+        function removeAlarm(id) {
+            alarms = alarms.filter((a) => a.id !== id);
+            saveAlarms();
+            fetchAlarms();
+        }
+
+        function loadAlarms() {
+            try {
+                const raw = localStorage.getItem('dashboard_alarms_v1');
+                alarms = raw ? JSON.parse(raw) : [];
+                if (!Array.isArray(alarms)) alarms = [];
+            } catch (_) {
+                alarms = [];
+            }
+        }
+
+        function saveAlarms() {
+            localStorage.setItem('dashboard_alarms_v1', JSON.stringify(alarms));
+        }
+
+        function checkAlarms() {
+            if (activeAlarmId) return;
+            const now = new Date();
+            const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            const dateKey = now.toISOString().slice(0, 10);
+            const day = now.getDay(); // 0 Sun, 6 Sat
+
+            for (const alarm of alarms) {
+                if (!alarm.enabled) continue;
+                if (alarm.time !== currentTime) continue;
+
+                if (alarm.repeat === 'once' && alarm.date !== dateKey) continue;
+                if (alarm.repeat === 'weekdays' && (day === 0 || day === 6)) continue;
+                if (alarm.repeat === 'weekends' && (day !== 0 && day !== 6)) continue;
+
+                const triggerKey = `${dateKey}_${currentTime}`;
+                if (alarm.lastTriggeredKey === triggerKey) continue;
+
+                alarm.lastTriggeredKey = triggerKey;
+                if (alarm.repeat === 'once') alarm.enabled = false;
+                saveAlarms();
+                fetchAlarms();
+                triggerAlarm(alarm);
+                break;
+            }
+        }
+
+        function triggerAlarm(alarm) {
+            activeAlarmId = alarm.id;
+            const alertBox = document.getElementById('alarm-alert');
+            const alertText = document.getElementById('alarm-alert-text');
+            if (alertBox && alertText) {
+                alertText.textContent = `${alarm.label} - It's ${alarm.time}.`;
+                alertBox.classList.remove('hidden');
+            }
+            fireDeviceNotification(alarm);
+        }
+
+        function fireDeviceNotification(alarm) {
+            const title = 'Alarm Reminder';
+            const body = `${alarm.label} - ${alarm.time}`;
+            let notified = false;
+
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification(title, {
+                        body: body,
+                        requireInteraction: true,
+                        silent: false,
+                        tag: `alarm_${alarm.id}`
+                    });
+                    notified = true;
+                } catch (_) {
+                    notified = false;
+                }
+            }
+
+            if (navigator.vibrate) {
+                try { navigator.vibrate([300, 150, 300, 150, 300]); } catch (_) {}
+            }
+
+            if (!notified) {
+                playAlarmSoundFallback(alarm.tone, alarm.volume);
+            }
+        }
+
+        function playAlarmSoundFallback(tone, volume) {
+            stopAlarmSound(false);
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+            if (!audioCtx) audioCtx = new AudioContextClass();
+
+            const toneSet = tone === 'soft'
+                ? [440, 523]
+                : tone === 'beep'
+                    ? [660, 660, 660]
+                    : [523, 659, 784];
+            let i = 0;
+
+            alarmSoundTimer = setInterval(() => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = tone === 'soft' ? 'sine' : 'square';
+                osc.frequency.value = toneSet[i % toneSet.length];
+                gain.gain.value = Math.max(0.05, Math.min(1, volume || 0.8));
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                setTimeout(() => {
+                    osc.stop();
+                    osc.disconnect();
+                    gain.disconnect();
+                }, 250);
+                i += 1;
+            }, 420);
+        }
+
+        function ensureNotificationPermission(prompt) {
+            if (!('Notification' in window)) return;
+            if (Notification.permission === 'default' && prompt) {
+                Notification.requestPermission().catch(() => {});
+            }
+        }
+
+        function stopAlarmSound(clearActive = true) {
+            if (alarmSoundTimer) {
+                clearInterval(alarmSoundTimer);
+                alarmSoundTimer = null;
+            }
+            if (clearActive) {
+                const alertBox = document.getElementById('alarm-alert');
+                if (alertBox) alertBox.classList.add('hidden');
+                activeAlarmId = '';
+            }
+        }
+
+        function dismissActiveAlarm() {
+            stopAlarmSound(true);
+        }
+
+        function snoozeActiveAlarm() {
+            const active = alarms.find((a) => a.id === activeAlarmId);
+            if (!active) {
+                stopAlarmSound(true);
+                return;
+            }
+            const mins = Number(active.snooze || 5);
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + mins);
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            active.time = `${hh}:${mm}`;
+            active.date = now.toISOString().slice(0, 10);
+            active.repeat = 'once';
+            active.enabled = true;
+            active.lastTriggeredKey = '';
+            saveAlarms();
+            fetchAlarms();
+            stopAlarmSound(true);
+            alert(`Alarm snoozed for ${mins} minutes.`);
         }
 
         function escapeHTML(value) {
@@ -831,6 +1363,9 @@
                 const title = escapeHTML(item.title || item.filename || 'Untitled');
                 const content = escapeHTML(item.content || '');
                 const driveUrl = item.drive_url ? `<a href="${escapeHTML(item.drive_url)}" target="_blank" rel="noopener noreferrer">View File</a>` : '';
+                const fileId = item.file_id || item.fileid || item.fileId || '';
+                const downloadUrlValue = item.download_url || (fileId ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}` : '');
+                const downloadUrl = downloadUrlValue ? `<a href="${escapeHTML(downloadUrlValue)}" target="_blank" rel="noopener noreferrer" download>Download</a>` : '';
                 const url = item.url ? `<a href="${escapeHTML(item.url)}" target="_blank" rel="noopener noreferrer">Open Link</a>` : '';
                 const video = item.video_url ? `<iframe width="100%" height="150" src="${escapeHTML(item.video_url.replace('watch?v=', 'embed/'))}" frameborder="0" allowfullscreen loading="lazy"></iframe>` : '';
 
@@ -839,14 +1374,42 @@
                         <h4>${title}</h4>
                         <p>${content}</p>
                         ${driveUrl}
+                        ${downloadUrl}
                         ${url}
                         ${video}
                         <div class="item-actions">
+                            <button class="btn-main ghost" onclick="editItemTitle('${type}', ${index})"><i class="fas fa-pen"></i> Edit Title</button>
                             <button class="btn-danger" onclick="deleteItem('${type}', ${index})"><i class="fas fa-trash"></i> Delete</button>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        async function editItemTitle(type, index) {
+            const item = currentData[type]?.[index];
+            if (!item) return;
+            const currentTitle = String(item.title || item.filename || '').trim();
+            const updatedTitle = prompt('Enter new title:', currentTitle);
+            if (updatedTitle === null) return;
+            const title = updatedTitle.trim();
+            if (!title) return alert('Title cannot be empty.');
+
+            const id = String(item.id || '').trim();
+            if (!id) return alert('Edit failed: missing item id.');
+
+            const target = TARGET_BY_VIEW[type] || capitalize(type);
+            const response = await updateTitleInCloud(target, id, title);
+            if (String(response?.status || '').toLowerCase() !== 'success') {
+                return alert('Title update failed.');
+            }
+
+            alert('Title updated successfully.');
+            await fetchData(type);
+            await fetchDashboardStats();
+            await fetchOverview();
+            await fetchAllTitles();
+            await refreshKnowledgeBase(true);
         }
 
         async function deleteItem(type, index) {
@@ -856,11 +1419,14 @@
 
             const deleted = await requestDelete(type, item);
             if (!deleted) {
-                alert('Delete action was sent but server did not confirm. Check Apps Script delete handler.');
+                alert('Delete failed. Server did not confirm deletion.');
                 return;
             }
+            alert('Deleted successfully.');
             await fetchData(type);
             await fetchDashboardStats();
+            await fetchOverview();
+            await fetchAllTitles();
             await refreshKnowledgeBase(true);
         }
 
@@ -878,6 +1444,8 @@
 
             await fetchData(type);
             await fetchDashboardStats();
+            await fetchOverview();
+            await fetchAllTitles();
             await refreshKnowledgeBase(true);
             alert(`Deleted ${successCount} of ${items.length} ${type}.`);
         }
@@ -892,6 +1460,8 @@
                 }
             }
             await fetchDashboardStats();
+            await fetchOverview();
+            await fetchAllTitles();
             await refreshKnowledgeBase(true);
             showView('dashboard');
             alert('Delete-all process completed.');
@@ -900,24 +1470,26 @@
         async function requestDelete(type, item) {
             const target = TARGET_BY_VIEW[type] || capitalize(type);
             const itemType = ITEM_TYPE_BY_VIEW[type] || type.replace(/s$/, '');
-            const requests = [
-                { action: 'deleteData', target, item },
-                { action: 'deleteData', target, values: [item.title || item.filename || '', item.content || item.url || item.video_url || item.drive_url || ''] },
-                { action: 'deleteFile', type: itemType, filename: item.filename || '', drive_url: item.drive_url || '' }
-            ];
+            const itemId = String(item?.id || item?.uuid || item?._id || '').trim();
+            const requests = [];
+
+            if (itemId) {
+                requests.push({ action: 'deleteData', target, id: itemId });
+            }
+            if (item.filename || item.drive_url) {
+                requests.push({ action: 'deleteFile', type: itemType, filename: item.filename || '', drive_url: item.drive_url || '' });
+            }
 
             for (const payload of requests) {
                 try {
                     const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                     const result = await response.json().catch(() => ({}));
-                    if (result?.success === true || String(result?.status || '').toLowerCase() === 'success') {
-                        return true;
-                    }
-                    if (response.ok && !result?.error) {
+                    const status = String(result?.status || '').toLowerCase();
+                    if (result?.success === true || status === 'success') {
                         return true;
                     }
                 } catch (_) {
-                    // ignore and try next delete payload shape
+                    // ignore and try next payload
                 }
             }
             return false;
@@ -926,45 +1498,72 @@
         async function saveNote() {
             const title = document.getElementById('note-title').value;
             const content = document.getElementById('note-content').value;
-            await sendToCloud('addData', 'Notes', [title, content]);
+            const result = await sendToCloud('addData', 'Notes', [title, content]);
+            if (String(result?.status || '').toLowerCase() !== 'success') {
+                return alert('Failed to save note.');
+            }
+            alert('Note added successfully.');
             fetchData('notes');
             fetchDashboardStats();
+            fetchOverview();
+            fetchAllTitles();
             refreshKnowledgeBase(true);
         }
 
         async function saveVideo() {
             const title = document.getElementById('video-title').value;
             const url = document.getElementById('video-url').value;
-            await sendToCloud('addData', 'Videos', [title, url, 'URL']);
+            const result = await sendToCloud('addData', 'Videos', [title, url, 'URL']);
+            if (String(result?.status || '').toLowerCase() !== 'success') {
+                return alert('Failed to save video.');
+            }
+            alert('Video added successfully.');
             fetchData('videos');
             fetchDashboardStats();
+            fetchOverview();
+            fetchAllTitles();
             refreshKnowledgeBase(true);
         }
 
         async function saveBookmark() {
             const title = document.getElementById('link-title').value;
             const url = document.getElementById('link-url').value;
-            await sendToCloud('addData', 'Bookmarks', [title, url, 'General']);
+            const result = await sendToCloud('addData', 'Bookmarks', [title, url, 'General']);
+            if (String(result?.status || '').toLowerCase() !== 'success') {
+                return alert('Failed to save bookmark.');
+            }
+            alert('Bookmark added successfully.');
             fetchData('bookmarks');
             fetchDashboardStats();
+            fetchOverview();
+            fetchAllTitles();
             refreshKnowledgeBase(true);
         }
 
         async function handleFileUpload(type) {
             const fileInput = document.getElementById(`${type}-file`);
+            const titleInput = document.getElementById(`${type}-title`);
             const file = fileInput.files[0];
             if (!file) return alert('Select a file first');
+            const title = String(titleInput?.value || '').trim() || file.name;
 
             const reader = new FileReader();
             reader.onload = async () => {
                 const base64 = reader.result.split(',')[1];
-                await fetch(API_URL, {
+                const response = await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'uploadFile', type: type, filename: file.name, mimeType: file.type, base64: base64 })
+                    body: JSON.stringify({ action: 'uploadFile', type: type, title: title, filename: file.name, mimeType: file.type, base64: base64 })
                 });
-                alert('File Saved!');
+                const result = await response.json().catch(() => ({}));
+                if (String(result?.status || '').toLowerCase() !== 'success') {
+                    return alert('File upload failed.');
+                }
+                alert('File saved successfully.');
+                if (titleInput) titleInput.value = '';
                 fetchData(type + 's');
                 fetchDashboardStats();
+                fetchOverview();
+                fetchAllTitles();
                 refreshKnowledgeBase(true);
             };
             reader.readAsDataURL(file);
@@ -974,6 +1573,14 @@
             const response = await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action, target, values })
+            });
+            return await response.json();
+        }
+
+        async function updateTitleInCloud(target, id, title) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'updateTitle', target, id, title })
             });
             return await response.json();
         }
@@ -1136,6 +1743,7 @@
             if (e.key === 'Enter') login();
         });
         updateThemeIcon();
+        initClockAndAlarm();
     </script>
 </body>
 </html>

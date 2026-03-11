@@ -277,6 +277,65 @@
             resize: vertical;
         }
 
+        .editor-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin: 0.2rem 0 0.8rem;
+        }
+
+        .tool-btn {
+            height: 38px;
+            min-width: 38px;
+            padding: 0 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(107, 115, 147, 0.35);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .tool-btn.active {
+            border-color: rgba(39, 98, 255, 0.5);
+            color: var(--primary);
+            background: rgba(39, 98, 255, 0.08);
+        }
+
+        .tool-select {
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid rgba(107, 115, 147, 0.35);
+            background: var(--surface);
+            color: var(--text);
+            padding: 0 8px;
+            font: inherit;
+        }
+
+        .rich-editor {
+            min-height: 170px;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(107, 115, 147, 0.3);
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+            line-height: 1.5;
+        }
+
+        .rich-editor:empty::before {
+            content: attr(data-placeholder);
+            color: var(--muted);
+        }
+
+        .note-content-input {
+            display: none;
+        }
+
         .btn-main {
             border: none;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -291,6 +350,10 @@
             background: transparent;
             color: var(--text);
             border: 1px solid rgba(107, 115, 147, 0.35);
+        }
+
+        .btn-main i {
+            margin-right: 6px;
         }
 
         .data-grid {
@@ -319,6 +382,29 @@
             font-size: 0.9rem;
         }
 
+        .note-content {
+            margin: 0 0 0.7rem;
+            color: var(--muted);
+            font-size: 0.92rem;
+            max-height: 200px;
+            overflow: auto;
+            padding-right: 6px;
+        }
+
+        .note-content h1,
+        .note-content h2,
+        .note-content h3 {
+            margin: 0.2rem 0 0.4rem;
+            color: var(--text);
+        }
+
+        .note-content blockquote {
+            margin: 0.4rem 0;
+            padding-left: 0.8rem;
+            border-left: 3px solid rgba(39, 98, 255, 0.4);
+            color: var(--text);
+        }
+
         .item-card a {
             color: var(--primary);
             text-decoration: none;
@@ -342,6 +428,13 @@
             cursor: pointer;
             font-size: 0.82rem;
             font-weight: 600;
+        }
+
+        .btn-main,
+        .btn-danger,
+        .icon-btn,
+        .tool-btn {
+            min-height: 40px;
         }
 
         .section-tools {
@@ -575,23 +668,61 @@
             margin: 0;
         }
 
+        @media (max-width: 900px) {
+            .dashboard-widgets {
+                grid-template-columns: 1fr;
+            }
+
+            .mini-input-row.three {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
         @media (max-width: 700px) {
             header {
-                padding: 0.8rem 1rem;
-                align-items: flex-start;
-                flex-direction: column;
+                padding: 0.7rem 0.9rem;
+                align-items: center;
+                flex-direction: row;
+            }
+
+            .brand-block {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .brand {
+                font-size: 1rem;
+            }
+
+            .brand-sub {
+                font-size: 0.75rem;
             }
 
             .top-actions {
-                width: 100%;
+                width: auto;
+                margin-left: auto;
+                justify-content: flex-end;
+                gap: 0.4rem;
             }
 
             .top-actions .btn-main {
-                flex: 1;
+                padding: 8px;
+                min-width: 34px;
+                font-size: 0.8rem;
+            }
+
+            .top-actions .btn-label {
+                display: none;
+            }
+
+            .top-actions .btn-main i {
+                margin-right: 0;
             }
 
             .top-actions .icon-btn {
-                flex: 0 0 40px;
+                flex: 0 0 34px;
+                width: 34px;
+                height: 34px;
             }
 
             .dashboard-grid {
@@ -604,6 +735,10 @@
 
             .card i {
                 font-size: 1.6rem;
+            }
+
+            .editor-toolbar {
+                gap: 6px;
             }
         }
 
@@ -626,6 +761,19 @@
 
             .calc-grid .eq {
                 grid-column: span 1;
+            }
+
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .item-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .brand-sub {
+                display: none;
             }
         }
     </style>
@@ -650,8 +798,8 @@
             </div>
             <div class="top-actions">
                 <button id="theme-toggle" onclick="toggleDarkMode()" class="icon-btn" title="Toggle Theme"><i class="fas fa-moon"></i></button>
-                <button onclick="showView('dashboard')" class="btn-main">Dashboard</button>
-                <button onclick="logout()" class="btn-main ghost">Logout</button>
+                <button onclick="showView('dashboard')" class="btn-main"><i class="fas fa-chart-pie"></i> <span class="btn-label">Dashboard</span></button>
+                <button onclick="logout()" class="btn-main ghost"><i class="fas fa-sign-out-alt"></i> <span class="btn-label">Logout</span></button>
             </div>
         </header>
 
@@ -746,13 +894,41 @@
             <div id="notes" class="view-section">
                 <button onclick="showView('dashboard')" class="btn-main ghost">&larr; Back</button>
                 <div class="input-group">
-                    <h3>Add New Note</h3>
+                    <h3 id="note-form-title">Add New Note</h3>
                     <div class="section-tools">
                         <button class="btn-danger" onclick="deleteAllByType('notes')">Delete All Notes</button>
                     </div>
                     <input type="text" id="note-title" placeholder="Note Title...">
-                    <textarea id="note-content" placeholder="Content..."></textarea>
-                    <button onclick="saveNote()" class="btn-main"><i class="fas fa-save"></i> Save</button>
+                    <div class="editor-toolbar" aria-label="Note editor tools">
+                        <button class="tool-btn" data-cmd="bold" title="Bold"><i class="fas fa-bold"></i></button>
+                        <button class="tool-btn" data-cmd="italic" title="Italic"><i class="fas fa-italic"></i></button>
+                        <button class="tool-btn" data-cmd="underline" title="Underline"><i class="fas fa-underline"></i></button>
+                        <button class="tool-btn" data-cmd="strikeThrough" title="Strike"><i class="fas fa-strikethrough"></i></button>
+                        <select class="tool-select" id="note-block-format" title="Headings">
+                            <option value="P">Paragraph</option>
+                            <option value="H1">Heading 1</option>
+                            <option value="H2">Heading 2</option>
+                            <option value="H3">Heading 3</option>
+                            <option value="BLOCKQUOTE">Quote</option>
+                            <option value="PRE">Code Block</option>
+                        </select>
+                        <button class="tool-btn" data-cmd="insertUnorderedList" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+                        <button class="tool-btn" data-cmd="insertOrderedList" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+                        <button class="tool-btn" data-cmd="justifyLeft" title="Align Left"><i class="fas fa-align-left"></i></button>
+                        <button class="tool-btn" data-cmd="justifyCenter" title="Align Center"><i class="fas fa-align-center"></i></button>
+                        <button class="tool-btn" data-cmd="justifyRight" title="Align Right"><i class="fas fa-align-right"></i></button>
+                        <button class="tool-btn" data-cmd="createLink" title="Insert Link"><i class="fas fa-link"></i></button>
+                        <button class="tool-btn" data-cmd="selectAll" title="Select All"><i class="fas fa-i-cursor"></i></button>
+                        <button class="tool-btn" data-cmd="removeFormat" title="Clear Formatting"><i class="fas fa-eraser"></i></button>
+                        <button class="tool-btn" data-cmd="undo" title="Undo"><i class="fas fa-undo"></i></button>
+                        <button class="tool-btn" data-cmd="redo" title="Redo"><i class="fas fa-redo"></i></button>
+                    </div>
+                    <div id="note-editor" class="rich-editor" contenteditable="true" data-placeholder="Write your note here..."></div>
+                    <textarea id="note-content" class="note-content-input" aria-hidden="true"></textarea>
+                    <div class="section-tools">
+                        <button id="note-save-btn" onclick="saveNote()" class="btn-main"><i class="fas fa-save"></i> Save</button>
+                        <button id="note-cancel-btn" onclick="cancelEditNote()" class="btn-main ghost hidden">Cancel Edit</button>
+                    </div>
                 </div>
                 <div id="notes-list" class="data-grid"></div>
             </div>
@@ -903,6 +1079,8 @@
         let alarmSoundTimer = null;
         let audioCtx = null;
         let alarms = [];
+        let editingNoteId = '';
+        let editingNoteIndex = -1;
 
         function login() {
             const user = document.getElementById('login-user').value.trim();
@@ -1352,6 +1530,63 @@
                 .replace(/'/g, '&#39;');
         }
 
+        function stripHtmlTags(value) {
+            const div = document.createElement('div');
+            div.innerHTML = String(value ?? '');
+            return div.textContent || div.innerText || '';
+        }
+
+        function sanitizeNoteHtml(value) {
+            const html = String(value ?? '');
+            if (!html.trim()) return '';
+
+            const allowedTags = new Set([
+                'B', 'STRONG', 'I', 'EM', 'U', 'S', 'STRIKE',
+                'BR', 'P', 'DIV', 'UL', 'OL', 'LI',
+                'H1', 'H2', 'H3', 'BLOCKQUOTE', 'CODE', 'PRE', 'SPAN', 'A'
+            ]);
+            const allowedAlign = new Set(['left', 'right', 'center', 'justify']);
+
+            const doc = new DOMParser().parseFromString(`<div>${html}</div>`, 'text/html');
+            const root = doc.body.firstElementChild;
+            const nodes = root.querySelectorAll('*');
+
+            nodes.forEach((node) => {
+                if (!allowedTags.has(node.tagName)) {
+                    const parent = node.parentNode;
+                    while (node.firstChild) parent.insertBefore(node.firstChild, node);
+                    parent.removeChild(node);
+                    return;
+                }
+
+                [...node.attributes].forEach((attr) => {
+                    const name = attr.name.toLowerCase();
+                    if (node.tagName === 'A' && name === 'href') return;
+                    if (name === 'style') {
+                        const style = String(node.getAttribute('style') || '');
+                        const match = style.match(/text-align\s*:\s*([a-z]+)/i);
+                        if (match && allowedAlign.has(match[1].toLowerCase())) {
+                            node.setAttribute('style', `text-align:${match[1].toLowerCase()}`);
+                            return;
+                        }
+                    }
+                    node.removeAttribute(attr.name);
+                });
+
+                if (node.tagName === 'A') {
+                    const href = node.getAttribute('href') || '';
+                    if (!/^https?:\/\//i.test(href)) {
+                        node.removeAttribute('href');
+                    } else {
+                        node.setAttribute('target', '_blank');
+                        node.setAttribute('rel', 'noopener noreferrer');
+                    }
+                }
+            });
+
+            return root.innerHTML;
+        }
+
         function renderData(type, data) {
             const container = document.getElementById(`${type}-list`);
             if (!data || data.length === 0) {
@@ -1361,24 +1596,32 @@
 
             container.innerHTML = data.map((item, index) => {
                 const title = escapeHTML(item.title || item.filename || 'Untitled');
-                const content = escapeHTML(item.content || '');
+                const content = type === 'notes'
+                    ? sanitizeNoteHtml(item.content || '')
+                    : escapeHTML(item.content || '');
                 const driveUrl = item.drive_url ? `<a href="${escapeHTML(item.drive_url)}" target="_blank" rel="noopener noreferrer">View File</a>` : '';
                 const fileId = item.file_id || item.fileid || item.fileId || '';
                 const downloadUrlValue = item.download_url || (fileId ? `https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}` : '');
                 const downloadUrl = downloadUrlValue ? `<a href="${escapeHTML(downloadUrlValue)}" target="_blank" rel="noopener noreferrer" download>Download</a>` : '';
                 const url = item.url ? `<a href="${escapeHTML(item.url)}" target="_blank" rel="noopener noreferrer">Open Link</a>` : '';
                 const video = item.video_url ? `<iframe width="100%" height="150" src="${escapeHTML(item.video_url.replace('watch?v=', 'embed/'))}" frameborder="0" allowfullscreen loading="lazy"></iframe>` : '';
+                const contentBlock = type === 'notes'
+                    ? `<div class="note-content">${content || '<em>No content</em>'}</div>`
+                    : `<p>${content}</p>`;
+                const editButton = type === 'notes'
+                    ? `<button class="btn-main ghost" onclick="startEditNote(${index})"><i class="fas fa-pen"></i> Edit Note</button>`
+                    : `<button class="btn-main ghost" onclick="editItemTitle('${type}', ${index})"><i class="fas fa-pen"></i> Edit Title</button>`;
 
                 return `
                     <div class="item-card">
                         <h4>${title}</h4>
-                        <p>${content}</p>
+                        ${contentBlock}
                         ${driveUrl}
                         ${downloadUrl}
                         ${url}
                         ${video}
                         <div class="item-actions">
-                            <button class="btn-main ghost" onclick="editItemTitle('${type}', ${index})"><i class="fas fa-pen"></i> Edit Title</button>
+                            ${editButton}
                             <button class="btn-danger" onclick="deleteItem('${type}', ${index})"><i class="fas fa-trash"></i> Delete</button>
                         </div>
                     </div>
@@ -1495,14 +1738,136 @@
             return false;
         }
 
-        async function saveNote() {
-            const title = document.getElementById('note-title').value;
-            const content = document.getElementById('note-content').value;
-            const result = await sendToCloud('addData', 'Notes', [title, content]);
-            if (String(result?.status || '').toLowerCase() !== 'success') {
-                return alert('Failed to save note.');
+        function getNoteEditor() {
+            return document.getElementById('note-editor');
+        }
+
+        function updateEditorHiddenInput() {
+            const editor = getNoteEditor();
+            const hidden = document.getElementById('note-content');
+            if (!editor || !hidden) return;
+            hidden.value = sanitizeNoteHtml(editor.innerHTML);
+        }
+
+        function getEditorText() {
+            const editor = getNoteEditor();
+            return editor ? (editor.textContent || '').trim() : '';
+        }
+
+        function setEditorHtml(html) {
+            const editor = getNoteEditor();
+            if (!editor) return;
+            editor.innerHTML = sanitizeNoteHtml(html);
+            updateEditorHiddenInput();
+        }
+
+        function clearNoteEditor() {
+            document.getElementById('note-title').value = '';
+            setEditorHtml('');
+        }
+
+        function execEditorCommand(cmd) {
+            const editor = getNoteEditor();
+            if (!editor) return;
+            editor.focus();
+
+            if (cmd === 'createLink') {
+                const url = prompt('Enter URL (https://...)');
+                if (!url) return;
+                document.execCommand('createLink', false, url);
+            } else if (cmd === 'selectAll') {
+                document.execCommand('selectAll', false, null);
+            } else {
+                document.execCommand(cmd, false, null);
             }
-            alert('Note added successfully.');
+            updateEditorHiddenInput();
+        }
+
+        function handleBlockFormatChange() {
+            const select = document.getElementById('note-block-format');
+            if (!select) return;
+            const value = select.value;
+            const editor = getNoteEditor();
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('formatBlock', false, value);
+            updateEditorHiddenInput();
+        }
+
+        function initNoteEditor() {
+            const editor = getNoteEditor();
+            const toolbar = document.querySelector('.editor-toolbar');
+            if (toolbar) {
+                toolbar.addEventListener('click', (event) => {
+                    const btn = event.target.closest('[data-cmd]');
+                    if (!btn) return;
+                    execEditorCommand(btn.getAttribute('data-cmd'));
+                });
+            }
+            if (editor) {
+                editor.addEventListener('input', updateEditorHiddenInput);
+                editor.addEventListener('blur', updateEditorHiddenInput);
+            }
+            const select = document.getElementById('note-block-format');
+            if (select) select.addEventListener('change', handleBlockFormatChange);
+        }
+
+        function startEditNote(index) {
+            const item = currentData.notes?.[index];
+            if (!item) return;
+            editingNoteId = String(item.id || '').trim();
+            editingNoteIndex = index;
+            document.getElementById('note-title').value = item.title || '';
+            setEditorHtml(item.content || '');
+            document.getElementById('note-form-title').textContent = 'Edit Note';
+            document.getElementById('note-save-btn').innerHTML = '<i class="fas fa-save"></i> Update';
+            document.getElementById('note-cancel-btn').classList.remove('hidden');
+            showView('notes');
+            const editor = getNoteEditor();
+            if (editor) editor.focus();
+        }
+
+        function cancelEditNote() {
+            editingNoteId = '';
+            editingNoteIndex = -1;
+            document.getElementById('note-form-title').textContent = 'Add New Note';
+            document.getElementById('note-save-btn').innerHTML = '<i class="fas fa-save"></i> Save';
+            document.getElementById('note-cancel-btn').classList.add('hidden');
+            clearNoteEditor();
+        }
+
+        async function saveNote() {
+            const title = document.getElementById('note-title').value.trim();
+            updateEditorHiddenInput();
+            const content = document.getElementById('note-content').value;
+            const plainText = getEditorText();
+
+            if (!title) return alert('Title cannot be empty.');
+            if (!plainText) return alert('Note content cannot be empty.');
+
+            if (editingNoteId) {
+                const target = TARGET_BY_VIEW.notes;
+                const response = await updateNoteInCloud(target, editingNoteId, title, content);
+                const status = String(response?.status || '').toLowerCase();
+                if (status !== 'success') {
+                    const ok = confirm('Update failed. Save as new note and delete the old one instead?');
+                    if (!ok) return;
+                    const created = await sendToCloud('addData', 'Notes', [title, content]);
+                    if (String(created?.status || '').toLowerCase() !== 'success') {
+                        return alert('Failed to save updated note.');
+                    }
+                    await requestDelete('notes', { id: editingNoteId });
+                }
+                alert('Note updated successfully.');
+                cancelEditNote();
+            } else {
+                const result = await sendToCloud('addData', 'Notes', [title, content]);
+                if (String(result?.status || '').toLowerCase() !== 'success') {
+                    return alert('Failed to save note.');
+                }
+                alert('Note added successfully.');
+                clearNoteEditor();
+            }
             fetchData('notes');
             fetchDashboardStats();
             fetchOverview();
@@ -1581,6 +1946,14 @@
             const response = await fetch(API_URL, {
                 method: 'POST',
                 body: JSON.stringify({ action: 'updateTitle', target, id, title })
+            });
+            return await response.json();
+        }
+
+        async function updateNoteInCloud(target, id, title, content) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'updateNote', target, id, title, content })
             });
             return await response.json();
         }
@@ -1705,7 +2078,7 @@
                     merged.push({
                         type: view,
                         item,
-                        text: `${view} ${item.title || ''} ${item.content || ''} ${item.filename || ''} ${item.url || ''} ${item.video_url || ''} ${item.drive_url || ''}`.toLowerCase()
+                        text: `${view} ${item.title || ''} ${stripHtmlTags(item.content || '')} ${item.filename || ''} ${item.url || ''} ${item.video_url || ''} ${item.drive_url || ''}`.toLowerCase()
                     });
                 });
             }
@@ -1743,6 +2116,7 @@
             if (e.key === 'Enter') login();
         });
         updateThemeIcon();
+        initNoteEditor();
         initClockAndAlarm();
     </script>
 </body>
